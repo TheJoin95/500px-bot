@@ -1,0 +1,7 @@
+{
+  "require": {
+        "nlp-tools/nlp-tools": "1.0.*@dev",
+        "altorouter/altorouter": "1.1.0",
+    "hybridauth/hybridauth": "^2.6"
+    }
+}
