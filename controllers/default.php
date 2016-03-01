@@ -1,18 +1,40 @@
 <?php
+echo '<pre>';
+$query = http_build_query(
+          array(
+              'consumer_key' => CONSUMER_KEY,
+              'feature' => 'popular',
+              'sort' => 'times_viewed',
+              'sort_direction' => 'desc',
+              'rpp' => 100
+            )
+        );
+        // TODO: pagination, search by editors and other, search tags related at comment/photo
+        // cron, auto oauth for multiple usrs.
 
-switch ($action) {
-  case 'list':
-      $url = 'https://api.500px.com/v1/photos?feature=popular&sort=votes_count&image_size=3&include_store=store_download&include_states=voted';
-      $params = array();
-      $response = apiCall($url);
-      print_r($response);
-    break;
+$listing = apiCall('https://api.500px.com/v1/photos?'.$query);
+// print_r($listing);
+// foreach ($listing['photos'] as $key => $item) {
+//   print_r($item); exit();
+// }
 
-  default:
-      echo 'ehyha!';
-    break;
-}
+echo '</pre>';
 
+$sign_method = 'HMAC-SHA1';
+$mt = microtime();
+$rand = mt_rand();
+$nonce = md5($mt.$rand);
+$time = time();
+
+$query = array(
+    "oauth_consumer_key" => CONSUMER_KEY,
+    "oauth_signature_method"=>$sign_method,
+    "oauth_signature"=>$CONSUMER_SECRET,
+    "oauth_timestamp"=>$time,
+    "oauth_nonce"=>$nonce,
+    "oauth_version" =>"1.0"
+  );
+var_dump(apiCall('https://api.500px.com/v1/photos/142020435/comments', $query, true));
 
 
 // use NlpTools\Tokenizers\WhitespaceTokenizer;
