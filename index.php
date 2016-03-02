@@ -26,19 +26,22 @@ $config_file_path = './config/config.inc.php';
 // print_r($match);
 // exit();
 
-$hybridauth = new Hybrid_Auth( $config_file_path );
-$auth = $hybridauth->authenticate('px500');
-try {
-  $user = $auth->getUserProfile();
-  $user->access_tokens = $auth->getAccessToken();
-  $_SESSION['user'] = (array)$user;
-} catch (Exception $e) {
-  print_r($e);
-}
+require_once DIR_WEB . '/vendor/lusitanian/oauth/examples/fiveHundredPx.php';
 
-if(isset($_SESSION['user']['access_tokens'])) {
-  include DIR_WEB . '/controllers/default.php';
-}
+
+// $hybridauth = new Hybrid_Auth( $config_file_path );
+// $auth = $hybridauth->authenticate('px500');
+// try {
+//   $user = $auth->getUserProfile();
+//   $user->access_tokens = $auth->getAccessToken();
+//   $_SESSION['user'] = (array)$user;
+// } catch (Exception $e) {
+//   print_r($e);
+// }
+//
+// if(isset($_SESSION['user']['access_tokens'])) {
+//   include DIR_WEB . '/controllers/default.php';
+// }
 
 // // Interpreta e assegna Controll er e View
 // $controller =(isset($match['target']['controller']))?$match['target']['controller']:'default';

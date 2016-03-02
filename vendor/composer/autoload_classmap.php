@@ -29,6 +29,7 @@ return array(
     'Hybrid_Providers_OpenID' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/Providers/OpenID.php',
     'Hybrid_Providers_Twitter' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/Providers/Twitter.php',
     'Hybrid_Providers_Yahoo' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/Providers/Yahoo.php',
+    'Hybrid_Providers_px500' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/Providers/px500.php',
     'Hybrid_Storage' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/Storage.php',
     'Hybrid_Storage_Interface' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/StorageInterface.php',
     'Hybrid_User' => $vendorDir . '/hybridauth/hybridauth/hybridauth/Hybrid/User.php',

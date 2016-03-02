@@ -2,6 +2,8 @@
   "require": {
         "nlp-tools/nlp-tools": "1.0.*@dev",
         "altorouter/altorouter": "1.1.0",
-    "hybridauth/hybridauth": "^2.6"
+    "hybridauth/hybridauth": "^2.6",
+    "lusitanian/oauth": "^0.8.9",
+    "symfony/http-foundation": "^3.0"
     }
 }
