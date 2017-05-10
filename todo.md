@@ -1,4 +1,5 @@
 - [OK] login da configurazione
+- [OK] parametri dichiarati da CLI
 - follow/unfollow
 - comment in base a ricerche e configurazione
 - comment in base a top trending e recupero tramite api

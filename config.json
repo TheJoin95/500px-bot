@@ -2,5 +2,38 @@
 	"paramsLogin": {
 		"email": "blabla@mail.it",
 		"password": "secretpswd"
-	}
+	},
+	"searchParams": {
+		"type": "top_trend|categories|tags|fresh|popoular|upcoming|following",
+		"pageLimit": 5,
+		"categories": ["abstract", "nature"],
+		"tags": ["panorama", "landscapes", "..."],
+	},
+	"paramsLike": {
+		"type": "top_trend|categories|tags|fresh|popoular|upcoming|not_following|following|random",
+		"tags": ["landscapes", "travel", "nikon"],
+		"categories": ["nature", "landscapes"],
+		"maxHour": 30,
+		"maxDay": 100,
+		"timeBetween": "300sec"
+	},
+	"paramsFollow": {
+		"type": "top_trend|categories|tags|fresh|popoular|upcoming|not_following|following|random",
+		"tags": ["landscapes", "travel", "nikon"],
+		"categories": ["nature", "landscapes"],
+		"maxHour": 30,
+		"maxDay": 100,
+		"timeBetween": "300sec",
+		"unFollowAfter": "3days"
+	},
+	"paramsComment": {
+		"type": "top_trend|categories|tags|fresh|popoular|upcoming|not_following|following|random",
+		"tags": ["landscapes", "travel", "nikon"],
+		"categories": ["nature", "landscapes"],
+		"maxHour": 30,
+		"maxDay": 100,
+		"timeBetween": "300sec",
+		"lookup": ["frasi per commentare", "Great job!", "Wow! That's really nice!", "Nice shot!"]
+	},
+	"info": "da ricontrollare"
 }

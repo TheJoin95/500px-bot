@@ -23,21 +23,21 @@ def getJsonFile(filename):
 
 def makeRequest(method, url, data = {}, headers = {}, checkStatusCode = True, proxies = None):
     global userSession
-    while True:
-        try:
-            response = userSession.request(method, url, data = data, headers = headers, proxies = None, timeout = 5)
-        except requests.exceptions.RequestException:
-            print "timeout"
-            time.sleep(5)
-            continue
-        if checkStatusCode and response.status_code != 200:
-            print "error page"
-            time.sleep(5)
-            continue
-        return response
+    try:
+        response = userSession.request(method, url, data = data, headers = headers, proxies = None, timeout = 5)
+    except requests.exceptions.RequestException:
+        print "timeout"
+        time.sleep(5)
+        continue
+    if checkStatusCode and response.status_code != 200:
+        print "error page"
+        time.sleep(5)
+        continue
+    return response
 
 def doLogin():
     global userSession, configValues
+
     loginPage = makeRequest('GET', 'https://500px.com/login')
     time.sleep(3)
 
