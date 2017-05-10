@@ -1,4 +1,4 @@
-- login da configurazione
+- [OK] login da configurazione
 - follow/unfollow
 - comment in base a ricerche e configurazione
 - comment in base a top trending e recupero tramite api
