@@ -3,6 +3,10 @@
 		"email": "blabla@mail.it",
 		"password": "secretpswd"
 	},
+	"csrfHeaders": {
+        "X-CSRF-Token": "",
+        "X-Requested-With":"XMLHttpRequest"
+    },
 	"searchParams": {
 		"type": "top_trend|categories|tags|fresh|popoular|upcoming|following",
 		"pageLimit": 5,
