@@ -35,6 +35,10 @@ def makeRequest(method, url, data = {}, headers = {}, checkStatusCode = True, pr
         pass
     return response
 
+def updateCSRFHeaders():
+    global userSession, configValues
+    # get page and check for change of token
+
 def doLogin():
     global userSession, configValues
 
@@ -64,9 +68,25 @@ def doLogout():
     logoutPage = makeRequest("POST", "https://500px.com/logout", data = logoutParams)
     print logoutPage.status_code
 
-def unFollow():
+def unFollow(username, timeout = 5):
+    global userSession, configValues
     # https://500px.com/{username}/unfollow POST
     print "unfollow"
+    try:
+        unfollowResp = userSession.post('https://500px.com/' + username + '/unfollow', timeout = timeout, headers = configValues["csrfHeaders"])
+        if unfollowResp.status_code == 200:
+            print 'Unfollowed ' + username
+        elif unfollowResp.status_code == 404:
+            print "404 - user not exists"
+        else:
+            print unfollowResp.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    time.sleep(5)
 
 def doFollow():
     # https://500px.com/{username}/follow POST
