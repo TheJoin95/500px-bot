@@ -8,7 +8,7 @@
 - set di tag da ricercare o da prediligere
 - mettere like
 - pubblicare foto sui gruppi (possibile?? verificare)
-- abilitare proxy? (possibile ban, forse no se è della stessa nazione)
+- abilitare proxy? (possibile ban, forse no se è della stessa nazione. nel caso riprenderli da free-proxies.info)
 
 
 - login solo tramite user e psw
