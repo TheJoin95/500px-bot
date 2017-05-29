@@ -5,6 +5,11 @@ import time, json, os
 from bs4 import BeautifulSoup
 from random import randint
 
+DOMAIN = "https://500px.com"
+API_DOMAIN = "https://api.500px.com/v1"
+API_ENDPOINT_UNFOLLOW = "unfollow"
+API_ENDPOINT_LOGOUT = "logout"
+
 def getJsonFile(filename):
     fileContent = []
     if filename != '':
@@ -42,16 +47,16 @@ def updateCSRFHeaders():
 def doLogin():
     global userSession, configValues
 
-    loginPage = makeRequest('GET', 'https://500px.com/login')
+    loginPage = makeRequest('GET', DOMAIN + '/login')
     time.sleep(3)
 
     loginPage_bs = BeautifulSoup(loginPage.text, 'html.parser')
     configValues['paramsLogin']['authenticity_token'] = loginPage_bs.find('meta', {'name': 'csrf-token'}).get('content')
     configValues["csrfHeaders"]['X-CSRF-Token'] = configValues['paramsLogin']['authenticity_token']
 
-    userLogin = makeRequest('POST', 'https://api.500px.com/v1/session', data = configValues['paramsLogin'])
+    userLogin = makeRequest('POST', API_DOMAIN + '/session', data = configValues['paramsLogin'])
     responseLoginPost = json.loads(userLogin.content)
-    userSession["userData"] = responseLoginPost["user"]
+    configValues["user_data"] = responseLoginPost["user"]
 
     return (responseLoginPost['success'] == True and responseLoginPost['success'])
 
@@ -65,7 +70,7 @@ def doLogout():
         "authenticity_token": configValues["csrfHeaders"]['X-CSRF-Token']
     }
 
-    logoutPage = makeRequest("POST", "https://500px.com/logout", data = logoutParams)
+    logoutPage = makeRequest("POST", DOMAIN+"/" + API_ENDPOINT_LOGOUT, data = logoutParams)
     print logoutPage.status_code
 
 def unFollow(username, timeout = 5):
@@ -73,7 +78,7 @@ def unFollow(username, timeout = 5):
     # https://500px.com/{username}/unfollow POST
     print "unfollow"
     try:
-        unfollowResp = userSession.post('https://500px.com/' + username + '/unfollow', timeout = timeout, headers = configValues["csrfHeaders"])
+        unfollowResp = userSession.post(DOMAIN + '/' + username + '/' + API_ENDPOINT_UNFOLLOW, timeout = timeout, headers = configValues["csrfHeaders"])
         if unfollowResp.status_code == 200:
             print 'Unfollowed ' + username
         elif unfollowResp.status_code == 404:
@@ -92,12 +97,47 @@ def doFollow():
     # https://500px.com/{username}/follow POST
     print "dofollow"
 
-def doLike():
-    print "dolike"
+def vote(idphoto):
+    # https://api.500px.com/v1/photos/{idphoto}/vote?vote=1 POST
+    global userSession, configValues
+    # https://500px.com/{username}/unfollow POST
+    print "vote"
+    try:
+        vote = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/vote?vote=1', headers = configValues["csrfHeaders"])
+        if vote.status_code == 200:
+            print 'Voted for ' + idphoto
+        elif vote.status_code == 404:
+            print "404 - photo not exists"
+        else:
+            print vote.status_code
 
-def unLike():
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    time.sleep(5)
+
+def unVote(idphoto):
     # https://api.500px.com/v1/photos/{idphoto}/vote DELETE
-    print "unlike"
+    global userSession, configValues
+    # https://500px.com/{username}/unfollow POST
+    print "unVote"
+    try:
+        vote = userSession.delete(API_DOMAIN + '/photos/' + idphoto + '/vote', headers = configValues["csrfHeaders"])
+        if vote.status_code == 200:
+            print 'Unvoted for ' + idphoto
+        elif vote.status_code == 404:
+            print "404 - photo not exists"
+        else:
+            print vote.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    time.sleep(5)
 
 def getLikesOfPhoto():
     # https://api.500px.com/v1/photos/{idphoto}/votes?include_following=true&page=2&rpp=8 GET
@@ -154,3 +194,5 @@ if __name__ == '__main__':
         raise "error: undefined paramsLogin in config"
 
     print doLogin()
+    print unFollow("username")
+    # print doLogout()
