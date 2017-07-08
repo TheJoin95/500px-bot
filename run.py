@@ -93,9 +93,25 @@ def unFollow(username, timeout = 5):
 
     time.sleep(5)
 
-def doFollow():
+def doFollow(username):
     # https://500px.com/{username}/follow POST
-    print "dofollow"
+    global userSession, configValues
+
+    try:
+        follow = userSession.post(API_DOMAIN + '/' + username + '/follow', headers = configValues["csrfHeaders"])
+        if follow.status_code == 200:
+            print "Following " + username
+        elif follow.status_code == 404:
+            print username + " not exists"
+        else
+            print follow.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    time.sleep(3)
 
 def vote(idphoto):
     # https://api.500px.com/v1/photos/{idphoto}/vote?vote=1 POST
@@ -139,15 +155,32 @@ def unVote(idphoto):
 
     time.sleep(5)
 
-def getLikesOfPhoto():
+def getLikesOfPhoto(idphoto, page=0):
     # https://api.500px.com/v1/photos/{idphoto}/votes?include_following=true&page=2&rpp=8 GET
-    print "getlikes"
+    global userSession, configValues
+
+    try:
+        votes = userSession.get(API_DOMAIN + '/photos/' + idphoto + '/votes?include_following=true&page='+page+'&rpp=8', headers = configValues["csrfHeaders"])
+        if votes.status_code == 200:
+            print 'Unvoted for ' + idphoto
+        elif votes.status_code == 404:
+            print "404 - photo not exists"
+        else:
+            print votes.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    return votes
 
 def doComment():
     # https://api.500px.com/v1/photos/211674051/comments?sort=created_at&include_subscription=1&include_flagged=1&nested=1 POST
     # payload JSON, need to GET all profile data :S
     # {"body":"Really nice shot! love the combination and the colors :)","user":{"id":6775294,"username":"mikistorm","firstname":"Miki","lastname":"Lombardi","fullname":"Miki Lombardi","affection":1310,"userpic_url":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/1.jpg?1","userpic_https_url":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/1.jpg?1","cover_url":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/cover_2048.jpg?4","upgrade_status":0,"usertype":0,"city":"Firenze","state":"","country":"Italy","admin":false,"avatars":{"default":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/1.jpg?1"},"large":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/2.jpg?1"},"small":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/3.jpg?1"},"tiny":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/4.jpg?1"}},"show_groups_onboarding":false,"followers_count":11,"photos_count":131,"views_count":19225,"followees_count":98,"email":"mikistorm@live.it","upload_limit":20,"store_enabled":true,"show_nude":false,"registration_date":"2014-02-03T04:21:46-05:00","birthday":"1995-06-15","upgrade_expiry_date":"2015-06-23","avatar_version":1,"needs_contact_verification":false,"buyer":false,"photo_availability_filter":1},"replies":[]}
     print "docomment"
+
 if __name__ == '__main__':
 
     argv = sys.argv[1:]
