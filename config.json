@@ -39,5 +39,31 @@
 		"timeBetween": "300sec",
 		"lookup": ["frasi per commentare", "Great job!", "Wow! That's really nice!", "Nice shot!"]
 	},
-	"info": "da ricontrollare"
+	"botConfig": {
+		"proxy" : null,
+		"max_likes_per_day" : 500,
+		"max_unlikes_per_day" : 100,
+		"max_follows_per_day" : 100,
+		"max_unfollows_per_day" : 10,
+		"max_comments_per_day" : 100,
+		"max_likes_to_like" : 200,
+		"max_followers_to_follow" : 1000,
+		"min_followers_to_follow" : 50,
+		"max_following_to_follow" : 100,
+		"min_following_to_follow" : 10,
+		"max_followers_to_following_ratio" : 3,
+		"max_following_to_followers_ratio" : 3,
+		"follow_users_from_like": false,
+		"tag_search" : true,
+		"max_likes_to_like" : 30,
+		"like_delay" : 20,
+		"unlike_delay" : 3600,
+		"follow_delay" : 600,
+		"unfollow_delay" : 1800,
+		"unlike_delay" : 3600,
+		"comment_delay" : 300,
+		"whitelist" : null,
+		"blacklist" : null,
+		"comments_file" : null
+	}
 }

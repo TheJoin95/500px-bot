@@ -10,6 +10,9 @@ API_DOMAIN = "https://api.500px.com/v1"
 API_ENDPOINT_UNFOLLOW = "unfollow"
 API_ENDPOINT_LOGOUT = "logout"
 
+FOLLOW_FILE = "follow.json"
+COMMENT_LOOKUP_FILE = "comment.json"
+
 def getJsonFile(filename):
     fileContent = []
     if filename != '':
@@ -25,6 +28,20 @@ def getJsonFile(filename):
         f.close()
 
     return fileContent
+
+def appendToFile(data, filename="test.json"):
+    feeds = []
+    with open(filename, mode='r+') as feedsjson:
+        feeds = json.load(feedsjson)
+
+    with open(filename, mode='w') as feedsjson:
+        if type(data) == type([]):
+            feeds = data
+        else:
+            feeds.append(data)
+        
+        feeds = list(set(feeds))
+        json.dump(feeds, feedsjson)
 
 def makeRequest(method, url, data = {}, headers = {}, checkStatusCode = True, proxies = None):
     global userSession
@@ -101,9 +118,10 @@ def doFollow(username):
         follow = userSession.post(API_DOMAIN + '/' + username + '/follow', headers = configValues["csrfHeaders"])
         if follow.status_code == 200:
             print "Following " + username
+            appendToFile(username, FOLLOW_FILE)
         elif follow.status_code == 404:
             print username + " not exists"
-        else
+        else:
             print follow.status_code
 
         pass
@@ -158,11 +176,12 @@ def unVote(idphoto):
 def getLikesOfPhoto(idphoto, page=0):
     # https://api.500px.com/v1/photos/{idphoto}/votes?include_following=true&page=2&rpp=8 GET
     global userSession, configValues
-
+    votes = ""
     try:
-        votes = userSession.get(API_DOMAIN + '/photos/' + idphoto + '/votes?include_following=true&page='+page+'&rpp=8', headers = configValues["csrfHeaders"])
+        votes = userSession.get(API_DOMAIN + '/photos/' + idphoto + '/votes?include_following=true&page='+str(page)+'&rpp=8', headers = configValues["csrfHeaders"])
         if votes.status_code == 200:
-            print 'Unvoted for ' + idphoto
+            print 'getlikes for ' + idphoto
+            votes = json.loads(votes)
         elif votes.status_code == 404:
             print "404 - photo not exists"
         else:
@@ -175,11 +194,94 @@ def getLikesOfPhoto(idphoto, page=0):
 
     return votes
 
-def doComment():
+def search(term="",typeSearch="photos",sort="",categories=[], exclude_nude=True, page=1):
+    # endpoin GET https://api.500px.com/v1/photos/search
+    # params
+    # type:photos
+    # term:london
+    # sort:highest_rating|pulse|created_at default: revelance
+    # only:Aerial|Animals,Celebrities multiple
+    # image_size[]:1
+    # image_size[]:2
+    # image_size[]:32
+    # image_size[]:31
+    # image_size[]:33
+    # image_size[]:34
+    # image_size[]:35
+    # image_size[]:36
+    # image_size[]:2048
+    # image_size[]:4
+    # image_size[]:14
+    # include_states:true
+    # formats:jpeg,lytro
+    # include_tags:true
+    # exclude_nude:true
+    # page:1
+    # rpp:50
+    global userSession, configValues
+
+    params = {
+        "term": term,
+        "type": typeSearch,
+        "image_size": [1,2,32,31,33,34,35,36,2048,4,14],
+        "include_states": True,
+        "formats": "jpeg,lytro",
+        "exclude_nude": exclude_nude,
+        "page": page,
+        "rpp": 50
+    }
+
+    if sort != "":
+        params["sort"] = sort
+
+    if categories != "":
+        params["only"] = ",".join(categories) #working?
+
+
+    search = []
+    try:
+        search = userSession.get(API_DOMAIN + '/photos/search', params=params, headers = configValues["csrfHeaders"])
+        if search.status_code == 200:
+            search = json.loads(search.text)
+        elif search.status_code == 404:
+            print "404 - photo not exists"
+        else:
+            print search.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    return search
+
+def doComment(idphoto="", body="Great work!"):
+    global userSession, configValues
+    # se il commento non e gia stato fatto, fallo
     # https://api.500px.com/v1/photos/211674051/comments?sort=created_at&include_subscription=1&include_flagged=1&nested=1 POST
     # payload JSON, need to GET all profile data :S
     # {"body":"Really nice shot! love the combination and the colors :)","user":{"id":6775294,"username":"mikistorm","firstname":"Miki","lastname":"Lombardi","fullname":"Miki Lombardi","affection":1310,"userpic_url":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/1.jpg?1","userpic_https_url":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/1.jpg?1","cover_url":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/cover_2048.jpg?4","upgrade_status":0,"usertype":0,"city":"Firenze","state":"","country":"Italy","admin":false,"avatars":{"default":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/1.jpg?1"},"large":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/2.jpg?1"},"small":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/3.jpg?1"},"tiny":{"https":"https://pacdn.500px.org/6775294/2b0940d604a671bd4a8ddb2d8ee2c81920d13d75/4.jpg?1"}},"show_groups_onboarding":false,"followers_count":11,"photos_count":131,"views_count":19225,"followees_count":98,"email":"mikistorm@live.it","upload_limit":20,"store_enabled":true,"show_nude":false,"registration_date":"2014-02-03T04:21:46-05:00","birthday":"1995-06-15","upgrade_expiry_date":"2015-06-23","avatar_version":1,"needs_contact_verification":false,"buyer":false,"photo_availability_filter":1},"replies":[]}
-    print "docomment"
+    data = {
+        "body": body,
+        "user": configValues["user_data"]
+    }
+
+    comment = ''
+    try:
+        comment = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/comments', data=data, headers = configValues["csrfHeaders"])
+        if comment.status_code == 200:
+            print "comment done"
+        elif comment.status_code == 404:
+            print "404 - photo not exists"
+        else:
+            print comment.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    return comment
 
 if __name__ == '__main__':
 
@@ -227,5 +329,8 @@ if __name__ == '__main__':
         raise "error: undefined paramsLogin in config"
 
     print doLogin()
-    print unFollow("username")
+    #print search("london")
+    #doComment("81367687")
+    # print getLikesOfPhoto("81367687")
+    #vote("81367687")
     # print doLogout()
