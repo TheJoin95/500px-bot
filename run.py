@@ -10,7 +10,8 @@ API_DOMAIN = "https://api.500px.com/v1"
 API_ENDPOINT_UNFOLLOW = "unfollow"
 API_ENDPOINT_LOGOUT = "logout"
 
-FOLLOW_FILE = "follow.json"
+TO_FOLLOW_FILE = "tofollow.json"
+FOLLOWED_FILE = "follow.json"
 COMMENT_LOOKUP_FILE = "comment.json"
 
 def getJsonFile(filename):
@@ -118,7 +119,7 @@ def doFollow(username):
         follow = userSession.post(API_DOMAIN + '/' + username + '/follow', headers = configValues["csrfHeaders"])
         if follow.status_code == 200:
             print "Following " + username
-            appendToFile(username, FOLLOW_FILE)
+            appendToFile(username, FOLLOWED_FILE)
         elif follow.status_code == 404:
             print username + " not exists"
         else:
@@ -255,6 +256,35 @@ def search(term="",typeSearch="photos",sort="",categories=[], exclude_nude=True,
 
     return search
 
+def getComment(idphoto="", sort="created_at", include_subscription=1,include_flagged=1, nested=1,page=1):
+    global userSession, configValues
+    # https://api.500px.com/v1/photos/388736/comments?sort=created_at&include_subscription=1&include_flagged=1&nested=1&page=1&rpp=30
+    params = {
+        "sort": sort,
+        "include_subscription": subscription,
+        "include_flagged": flagged,
+        "nested": nested,
+        "page": page,
+        "rpp": 30
+    }
+
+    comments = []
+    try:
+        comments = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/comments', params=params, headers = configValues["csrfHeaders"])
+        if comments.status_code == 200:
+            comments = json.loads(comments.text)
+        elif comments.status_code == 404:
+            print "404 - photo not exists"
+        else:
+            print comments.status_code
+
+        pass
+    except Exception, e:
+        print e
+        pass
+
+    return comments
+
 def doComment(idphoto="", body="Great work!"):
     global userSession, configValues
     # se il commento non e gia stato fatto, fallo
@@ -329,7 +359,18 @@ if __name__ == '__main__':
         raise "error: undefined paramsLogin in config"
 
     print doLogin()
-    #print search("london")
+    londonSearch = search("london")
+    print londonSearch
+
+    for el in londonSearch["photos"]:
+        if "voted" in el and el["voted"] == False:
+            # need to add to db or in a queue
+            print "add to vote, follow user and comment"
+            print "need to check criteria"
+            print "need to check if not follow + criteria"
+            print "need to check if not commented + criteria"
+            print "need to check likes and follow tags + users"
+
     #doComment("81367687")
     # print getLikesOfPhoto("81367687")
     #vote("81367687")
