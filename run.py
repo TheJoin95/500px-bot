@@ -132,15 +132,50 @@ def doFollow(username):
 
     time.sleep(3)
 
-def vote(idphoto):
+def checkAlreadyVoted(idphoto=''):
+    global userSession, configValues
+    
+    response = False
+    page = 1
+
+    while 1:
+        votes = getLikesOfPhoto(idphoto=idphoto, page=page)
+        if "users" in votes and len(votes["users"]) > 0:
+            for vote in votes["users"]:
+                if(vote["id"] == configValues["user_data"]["id"]):
+                    response = True
+                    break
+        else:
+            break
+
+        if(response == True):
+            break
+        else:
+            page = page + 1
+
+    print "checking already votes: " + str(response)
+    return response
+
+def vote(el):
     # https://api.500px.com/v1/photos/{idphoto}/vote?vote=1 POST
     global userSession, configValues
-    # https://500px.com/{username}/unfollow POST
-    print "vote"
+    
+    idphoto = ""
+    response = False
+    
+    # add check of configValues and increment count per day
+    if ("voted" not in el or el["voted"] == False):
+        idphoto = str(el['id'])
+    elif (not checkAlreadyVoted(el["id"])):
+        idphoto = str(el['id'])
+    else:
+        return False;
+
     try:
         vote = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/vote?vote=1', headers = configValues["csrfHeaders"])
         if vote.status_code == 200:
             print 'Voted for ' + idphoto
+            response = True
         elif vote.status_code == 404:
             print "404 - photo not exists"
         else:
@@ -148,20 +183,22 @@ def vote(idphoto):
 
         pass
     except Exception, e:
-        print e
+        print "exception vote: " + str(e)
         pass
 
     time.sleep(5)
+    return response
 
 def unVote(idphoto):
     # https://api.500px.com/v1/photos/{idphoto}/vote DELETE
     global userSession, configValues
-    # https://500px.com/{username}/unfollow POST
-    print "unVote"
+
+    response = False
     try:
-        vote = userSession.delete(API_DOMAIN + '/photos/' + idphoto + '/vote', headers = configValues["csrfHeaders"])
+        vote = userSession.delete(API_DOMAIN + '/photos/' + str(idphoto) + '/vote', headers = configValues["csrfHeaders"])
         if vote.status_code == 200:
             print 'Unvoted for ' + idphoto
+            response = True
         elif vote.status_code == 404:
             print "404 - photo not exists"
         else:
@@ -169,20 +206,21 @@ def unVote(idphoto):
 
         pass
     except Exception, e:
-        print e
+        print "exception unvote: " + str(e)
         pass
 
     time.sleep(5)
+    return response
 
 def getLikesOfPhoto(idphoto, page=0):
     # https://api.500px.com/v1/photos/{idphoto}/votes?include_following=true&page=2&rpp=8 GET
     global userSession, configValues
-    votes = ""
+    votes = []
     try:
-        votes = userSession.get(API_DOMAIN + '/photos/' + idphoto + '/votes?include_following=true&page='+str(page)+'&rpp=8', headers = configValues["csrfHeaders"])
+        votes = userSession.get(API_DOMAIN + '/photos/' + str(idphoto) + '/votes?include_following=true&page='+str(page)+'&rpp=8', headers = configValues["csrfHeaders"])
         if votes.status_code == 200:
-            print 'getlikes for ' + idphoto
-            votes = json.loads(votes)
+            print 'getlikes for ' + str(idphoto)
+            votes = json.loads(votes.text)
         elif votes.status_code == 404:
             print "404 - photo not exists"
         else:
@@ -190,7 +228,7 @@ def getLikesOfPhoto(idphoto, page=0):
 
         pass
     except Exception, e:
-        print e
+        print "exception getlikes: " + str(e)
         pass
 
     return votes
@@ -251,7 +289,7 @@ def search(term="",typeSearch="photos",sort="",categories=[], exclude_nude=True,
 
         pass
     except Exception, e:
-        print e
+        print "exception search: " + str(e)
         pass
 
     return search
@@ -261,8 +299,8 @@ def getComment(idphoto="", sort="created_at", include_subscription=1,include_fla
     # https://api.500px.com/v1/photos/388736/comments?sort=created_at&include_subscription=1&include_flagged=1&nested=1&page=1&rpp=30
     params = {
         "sort": sort,
-        "include_subscription": subscription,
-        "include_flagged": flagged,
+        "include_subscription": include_subscription,
+        "include_flagged": include_flagged,
         "nested": nested,
         "page": page,
         "rpp": 30
@@ -270,7 +308,7 @@ def getComment(idphoto="", sort="created_at", include_subscription=1,include_fla
 
     comments = []
     try:
-        comments = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/comments', params=params, headers = configValues["csrfHeaders"])
+        comments = userSession.get(API_DOMAIN + '/photos/' + str(idphoto) + '/comments', params=params, headers = configValues["csrfHeaders"])
         if comments.status_code == 200:
             comments = json.loads(comments.text)
         elif comments.status_code == 404:
@@ -280,12 +318,12 @@ def getComment(idphoto="", sort="created_at", include_subscription=1,include_fla
 
         pass
     except Exception, e:
-        print e
+        print "exception getComment: " + str(e)
         pass
 
     return comments
 
-def doComment(idphoto="", body="Great work!"):
+def doComment(idphoto="", body="Great work!", auto=False):
     global userSession, configValues
     # se il commento non e gia stato fatto, fallo
     # https://api.500px.com/v1/photos/211674051/comments?sort=created_at&include_subscription=1&include_flagged=1&nested=1 POST
@@ -296,11 +334,12 @@ def doComment(idphoto="", body="Great work!"):
         "user": configValues["user_data"]
     }
 
-    comment = ''
+    comment = False
     try:
-        comment = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/comments', data=data, headers = configValues["csrfHeaders"])
+        comment = userSession.post(API_DOMAIN + '/photos/' + str(idphoto) + '/comments', data=data, headers = configValues["csrfHeaders"])
         if comment.status_code == 200:
             print "comment done"
+            comment = True
         elif comment.status_code == 404:
             print "404 - photo not exists"
         else:
@@ -308,10 +347,35 @@ def doComment(idphoto="", body="Great work!"):
 
         pass
     except Exception, e:
-        print e
+        print "exception doComment: " + str(e)
         pass
 
+    time.sleep(5)
     return comment
+
+def checkAlreadyComment(idphoto=''):
+    global userSession, configValues
+
+    response = False
+    page = 1
+
+    while 1:
+        comments = getComment(idphoto=idphoto, page=page)
+        if "comments" in comments and len(comments["comments"]) > 0:
+            for comment in comments["comments"]:
+                if(comment["user_id"] == configValues["user_data"]["id"]):
+                    response = True
+                    break
+        else:
+            break
+
+        if(response == True):
+            break
+        else:
+            page = page + 1
+
+    print "checking already comment: " + str(response)
+    return response
 
 if __name__ == '__main__':
 
@@ -359,17 +423,27 @@ if __name__ == '__main__':
         raise "error: undefined paramsLogin in config"
 
     print doLogin()
+    
     londonSearch = search("london")
-    print londonSearch
+    # print londonSearch
 
     for el in londonSearch["photos"]:
-        if "voted" in el and el["voted"] == False:
-            # need to add to db or in a queue
-            print "add to vote, follow user and comment"
-            print "need to check criteria"
-            print "need to check if not follow + criteria"
-            print "need to check if not commented + criteria"
-            print "need to check likes and follow tags + users"
+        # need to add to db or in a queue
+        #print "need to check criteria"
+        print "processing: " + str(el["id"])
+        print "vote: " + str(vote(el))
+        # print "need to check if not commented + criteria"
+        willDoComment = False
+        if(not checkAlreadyComment(el["id"]) and ("comment" in configValues and configValues["comment"] == True)):
+            print "comment: " + str(doComment(idphoto=el["id"], auto=True))
+            willDoComment = True
+
+        if(willDoComment):
+            print "waiting 30"
+            time.sleep(30)
+        # print "add to vote, follow user and comment"
+        # print "need to check if not follow + criteria"
+        # print "need to check likes and follow tags + users"
 
     #doComment("81367687")
     # print getLikesOfPhoto("81367687")
