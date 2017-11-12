@@ -65,16 +65,18 @@ def updateCSRFHeaders():
 def doLogin():
     global userSession, configValues
 
-    loginPage = makeRequest('GET', DOMAIN + '/login')
-    time.sleep(3)
+    responseLoginPost = False
+    if "paramsLogin" in configValues:
+        loginPage = makeRequest('GET', DOMAIN + '/login')
+        time.sleep(3)
 
-    loginPage_bs = BeautifulSoup(loginPage.text, 'html.parser')
-    configValues['paramsLogin']['authenticity_token'] = loginPage_bs.find('meta', {'name': 'csrf-token'}).get('content')
-    configValues["csrfHeaders"]['X-CSRF-Token'] = configValues['paramsLogin']['authenticity_token']
+        loginPage_bs = BeautifulSoup(loginPage.text, 'html.parser')
+        configValues['paramsLogin']['authenticity_token'] = loginPage_bs.find('meta', {'name': 'csrf-token'}).get('content')
+        configValues["csrfHeaders"]['X-CSRF-Token'] = configValues['paramsLogin']['authenticity_token']
 
-    userLogin = makeRequest('POST', API_DOMAIN + '/session', data = configValues['paramsLogin'])
-    responseLoginPost = json.loads(userLogin.content)
-    configValues["user_data"] = responseLoginPost["user"]
+        userLogin = makeRequest('POST', API_DOMAIN + '/session', data = configValues['paramsLogin'])
+        responseLoginPost = json.loads(userLogin.content)
+        configValues["user_data"] = responseLoginPost["user"]
 
     return (responseLoginPost['success'] == True and responseLoginPost['success'])
 
@@ -415,14 +417,23 @@ if __name__ == '__main__':
         elif opt in ("-c", "--config"):
             configFile = arg
 
-    print configFile
+
+    print "Trying to get a config by file"
     if configFile != None:
         configValues = getJsonFile(configFile)
+    else:
+        print "Warning: no config file was found"
     
-    if "paramsLogin" not in configValues:
-        raise "error: undefined paramsLogin in config"
+    if "paramsLogin" not in configValues or type(configValues) == type(False):
+        raise ValueError("ERROR: undefined paramsLogin in config")
 
-    print doLogin()
+    print "Logggin in"
+    resultLogin = doLogin()
+
+    print "Logged in: " + str(resultLogin)
+
+    if resultLogin == False:
+        raise ValueError('Check your login data; login failed')
     
     londonSearch = search("london")
     # print londonSearch
