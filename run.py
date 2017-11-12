@@ -46,6 +46,8 @@ def appendToFile(data, filename="test.json"):
 
 def makeRequest(method, url, data = {}, headers = {}, checkStatusCode = True, proxies = None):
     global userSession
+
+    response = False
     try:
         response = userSession.request(method, url, data = data, headers = headers, proxies = None, timeout = 5)
     except requests.exceptions.RequestException:
@@ -337,22 +339,24 @@ def doComment(idphoto="", body="Great work!", auto=False):
     }
 
     comment = False
-    try:
-        comment = userSession.post(API_DOMAIN + '/photos/' + str(idphoto) + '/comments', data=data, headers = configValues["csrfHeaders"])
-        if comment.status_code == 200:
-            print "comment done"
-            comment = True
-        elif comment.status_code == 404:
-            print "404 - photo not exists"
-        else:
-            print comment.status_code
+    if not checkAlreadyComment(idphoto):
+        try:
+            comment = userSession.post(API_DOMAIN + '/photos/' + str(idphoto) + '/comments', data=data, headers = configValues["csrfHeaders"])
+            if comment.status_code == 200:
+                print "comment done"
+                comment = True
+            elif comment.status_code == 404:
+                print "404 - photo not exists"
+            else:
+                print comment.status_code
 
-        pass
-    except Exception, e:
-        print "exception doComment: " + str(e)
-        pass
+            pass
+        except Exception, e:
+            print "exception doComment: " + str(e)
+            pass
 
-    time.sleep(5)
+        time.sleep(5)
+
     return comment
 
 def checkAlreadyComment(idphoto=''):
@@ -378,6 +382,11 @@ def checkAlreadyComment(idphoto=''):
 
     print "checking already comment: " + str(response)
     return response
+
+def merge_two_dicts(x, y):
+    z = x.copy()   # start with x's keys and values
+    z.update(y)    # modifies z with y's keys and values & returns None
+    return z
 
 if __name__ == '__main__':
 
@@ -434,22 +443,74 @@ if __name__ == '__main__':
 
     if resultLogin == False:
         raise ValueError('Check your login data; login failed')
+
+    searchParams = [
+        {
+            "term": "",
+            "typeSearch": "fresh",
+            "sort": "",
+            "categories": []
+        }
+    ]
+
+    print "Check search params..."
+    if "searchParams" in configValues:
+        print "Found search params: building"
+        searchParams = []
+        for tag in configValues["searchParams"]["tags"]:
+            sort = ""
+            categories = []
+            typeSearch = "fresh"
+
+            if "sort" in configValues["searchParams"]:
+                sort = configValues["searchParams"]["sort"]
+
+            if "type" in configValues["searchParams"]:
+                typeSearch = configValues["searchParams"]["type"]
+
+            if "categories" in configValues["searchParams"]:
+                categories = configValues["searchParams"]["categories"]
+
+            searchParams.append({"term": tag, "typeSearch": typeSearch, "sort": sort, "categories": categories})
     
-    londonSearch = search("london")
+    print "DEBUG: we have " + str(len(searchParams)) + " search criteria"
+
+    print "Starting to search"
+    # memory limit issue
+    searchArray = []
+    for searchParam in searchParams:
+        searchArray = []
+        pageLimit = 2
+        if "searchParams" in configValues:
+            if "pageLimit" in configValues["searchParams"]:
+                pageLimit = configValues["searchParams"]["pageLimit"]
+
+        for page in xrange(1, pageLimit+1):
+            print "Request for " + searchParam["term"] + " type: " + searchParam["typeSearch"] + " sort: " + searchParam["sort"] + " page: " + str(page)
+            tmpSearchArray = search(term=searchParam["term"], typeSearch=searchParam["typeSearch"], sort=searchParam["sort"], categories=searchParam["categories"], page=page)
+            searchArray = searchArray + tmpSearchArray["photos"]
+            time.sleep(20)
     # print londonSearch
 
-    for el in londonSearch["photos"]:
+    print "We got " + str(len(searchArray)) + " photos to check and comment/vote/follow"
+
+    # too many time, need to make a queue or some workers to process the whole list by part
+    for el in searchArray:
         # need to add to db or in a queue
         #print "need to check criteria"
         print "processing: " + str(el["id"])
-        print "vote: " + str(vote(el))
-        # print "need to check if not commented + criteria"
-        willDoComment = False
-        if(not checkAlreadyComment(el["id"]) and ("comment" in configValues and configValues["comment"] == True)):
-            print "comment: " + str(doComment(idphoto=el["id"], auto=True))
-            willDoComment = True
 
-        if(willDoComment):
+        # print "need to check if not commented + criteria"
+        didAction = False
+        if("comment" in configValues and configValues["comment"] == True):
+            print "comment: " + str(doComment(idphoto=el["id"], auto=True))
+            didAction = True
+
+        if("vote" in configValues and configValues["vote"] == True):
+            print "voted: " + str(vote(el))
+            didAction = True
+
+        if(didAction):
             print "waiting 30"
             time.sleep(30)
         # print "add to vote, follow user and comment"
