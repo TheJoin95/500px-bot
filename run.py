@@ -12,10 +12,11 @@ API_ENDPOINT_UNFOLLOW = "unfollow"
 API_ENDPOINT_LOGOUT = "logout"
 
 TO_FOLLOW_FILE = "tofollow.json"
-FOLLOWED_FILE = "follow.json"
-COMMENT_LOOKUP_FILE = "comment.json"
+FOLLOWED_FILE = "followed.json"
+SEARCH_FILE = "search.json"
 
 BASE_CONFIG = {
+    "search_page_limit": 2,
     "max_likes_per_day" : 100,
     "max_unlikes_per_day" : 100,
     "max_follows_per_day" : 100,
@@ -69,7 +70,16 @@ def updateStats(key=""):
 
     return True
 
-def appendToFile(data, filename="test.json"):
+def checkCriteria(key="", content={}):
+    BASE_CONFIG
+    response = False
+
+    if content:
+        response = True
+
+    return response
+
+def appendToFile(data, filename="output.json"):
     feeds = []
     with open(filename, mode='r+') as feedsjson:
         feeds = json.load(feedsjson)
@@ -138,10 +148,13 @@ def unFollow(username, timeout = 5):
     global userSession, configValues
     # https://500px.com/{username}/unfollow POST
     print "unfollow"
+    response = False
     try:
         unfollowResp = userSession.post(DOMAIN + '/' + username + '/' + API_ENDPOINT_UNFOLLOW, timeout = timeout, headers = configValues["csrfHeaders"])
         if unfollowResp.status_code == 200:
             print 'Unfollowed ' + username
+            response = True
+            updateStats("unfollowingCounter")
         elif unfollowResp.status_code == 404:
             print "404 - user not exists"
         else:
@@ -153,16 +166,18 @@ def unFollow(username, timeout = 5):
         pass
 
     time.sleep(5)
+    return response
 
 def doFollow(username):
     # https://500px.com/{username}/follow POST
     global userSession, configValues
-
+    response = False
     try:
         follow = userSession.post(API_DOMAIN + '/' + username + '/follow', headers = configValues["csrfHeaders"])
         if follow.status_code == 200:
             print "Following " + username
             updateStats("followingCounter")
+            response = True
             appendToFile(username, FOLLOWED_FILE)
         elif follow.status_code == 404:
             print username + " not exists"
@@ -175,6 +190,7 @@ def doFollow(username):
         pass
 
     time.sleep(3)
+    return response
 
 def checkAlreadyVoted(idphoto=''):
     global userSession, configValues
@@ -219,6 +235,7 @@ def vote(el):
         vote = userSession.post(API_DOMAIN + '/photos/' + idphoto + '/vote?vote=1', headers = configValues["csrfHeaders"])
         if vote.status_code == 200:
             print 'Voted for ' + idphoto
+            updateStats("voteCounter")
             response = True
         elif vote.status_code == 404:
             print "404 - photo not exists"
@@ -243,6 +260,7 @@ def unVote(idphoto):
         if vote.status_code == 200:
             print 'Unvoted for ' + idphoto
             response = True
+            updateStats("voteCounter", type="decrement")
         elif vote.status_code == 404:
             print "404 - photo not exists"
         else:
@@ -384,6 +402,7 @@ def doComment(idphoto="", body="Great work!", auto=False):
             comment = userSession.post(API_DOMAIN + '/photos/' + str(idphoto) + '/comments', data=data, headers = configValues["csrfHeaders"])
             if comment.status_code == 200:
                 print "comment done"
+                updateStats("commentCounter")
                 comment = True
             elif comment.status_code == 404:
                 print "404 - photo not exists"
@@ -515,12 +534,14 @@ if __name__ == '__main__':
     
     print "DEBUG: we have " + str(len(searchParams)) + " search criteria"
 
+    print "DEBUG: Append data in " + SEARCH_FILE
+    appendToFile(searchParams, SEARCH_FILE)
     print "Starting to search"
     # memory limit issue
     searchArray = []
     for searchParam in searchParams:
         searchArray = []
-        pageLimit = 2
+        pageLimit = BASE_CONFIG["search_page_limit"]
         if "searchParams" in configValues:
             if "pageLimit" in configValues["searchParams"]:
                 pageLimit = configValues["searchParams"]["pageLimit"]
