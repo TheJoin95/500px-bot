@@ -71,11 +71,22 @@ def updateStats(key=""):
     return True
 
 def checkCriteria(key="", content={}):
-    BASE_CONFIG
+    global BASE_CONFIG, configValues
     response = False
+    
+    criteriaKey = {
+        "searchParams": ["search_page_limit"],
+        "paramsLike": ["max_likes_per_day", "max_likes_to_like", "min_likes_to_like"],
+        "paramsUnLike": ["max_unlikes_per_day"],
+        "paramsFollow": ["max_follows_per_day", "max_followers_to_follow", "min_followers_to_follow", "max_following_to_follow", "min_following_to_follow", "max_followers_to_following_ratio", "max_following_to_followers_ratio"],
+        "paramsUnFollow": ["max_unfollows_per_day", ],
+        "paramsComment": ["max_comments_per_day"]
+    }
 
-    if content:
-        response = True
+    if key in criteriaKey:
+        for value in criteriaKey[key]:
+            # need to check the values by condition
+            response = True
 
     return response
 
