@@ -1,6 +1,7 @@
 import sys
 import getopt
 import requests
+import datetime
 import time, json, os
 from bs4 import BeautifulSoup
 from random import randint
@@ -13,6 +14,32 @@ API_ENDPOINT_LOGOUT = "logout"
 TO_FOLLOW_FILE = "tofollow.json"
 FOLLOWED_FILE = "follow.json"
 COMMENT_LOOKUP_FILE = "comment.json"
+
+BASE_CONFIG = {
+    "max_likes_per_day" : 100,
+    "max_unlikes_per_day" : 100,
+    "max_follows_per_day" : 100,
+    "max_unfollows_per_day" : 10,
+    "max_comments_per_day" : 50,
+    "max_likes_to_like" : 250,
+    "max_followers_to_follow" : 500,
+    "min_followers_to_follow" : 0,
+    "max_following_to_follow" : 500,
+    "min_following_to_follow" : 5,
+    "max_followers_to_following_ratio" : 3,
+    "max_following_to_followers_ratio" : 3,
+    "min_likes_to_like" : 30,
+    "follow_users_from_like": false,
+    "unfollow_delay" : 1800,
+    "unlike_delay" : 3600
+}
+
+STATS = {
+    "commentCounter": {},
+    "voteCounter": {},
+    "followingCounter": {},
+    "unfollowingCounter": {}
+}
 
 def getJsonFile(filename):
     fileContent = []
@@ -29,6 +56,18 @@ def getJsonFile(filename):
         f.close()
 
     return fileContent
+
+def updateStats(key=""):
+    today = datetime.datetime.today().strftime('%Y%m%d')
+
+    if today in STATS[key]:
+        STATS[key][today]["count"] = STATS[key][today]["count"] + 1
+    else:
+        STATS[key][today].append({"count": 1})
+
+    STATS[key]["last_update"] = datetime.datetime.now()
+
+    return True
 
 def appendToFile(data, filename="test.json"):
     feeds = []
@@ -123,6 +162,7 @@ def doFollow(username):
         follow = userSession.post(API_DOMAIN + '/' + username + '/follow', headers = configValues["csrfHeaders"])
         if follow.status_code == 200:
             print "Following " + username
+            updateStats("followingCounter")
             appendToFile(username, FOLLOWED_FILE)
         elif follow.status_code == 404:
             print username + " not exists"
@@ -500,24 +540,32 @@ if __name__ == '__main__':
         #print "need to check criteria"
         print "processing: " + str(el["id"])
 
-        # print "need to check if not commented + criteria"
         didAction = False
-        if("comment" in configValues and configValues["comment"] == True):
-            print "comment: " + str(doComment(idphoto=el["id"], auto=True))
-            didAction = True
-
-        if("vote" in configValues and configValues["vote"] == True):
+        minTimeBetween = 5
+        if("paramsLike" in configValues and configValues["paramsLike"] == True):
             print "voted: " + str(vote(el))
             didAction = True
+            if "timeBetween" in configFileValues["paramsLike"]:
+                minTimeBetween = configFileValues["paramsLike"]["timeBetween"]
 
+        # print "need to check if not commented + criteria"
+        if("paramsComment" in configValues and configValues["paramsComment"] == True):
+            bodyComment = None
+            if "lookup" in configValues["paramsComment"]:
+                bodyComment = configValues["paramsComment"]["lookup"][randint(0, (len(configValues["paramsComment"]["lookup"])-1))]
+            
+            print "comment: " + str(doComment(idphoto=el["id"], body=bodyComment, auto=True))
+            if "timeBetween" in configFileValues["paramsComment"]:
+                minTimeBetween = configFileValues["paramsComment"]["timeBetween"]
+            
+            didAction = True
+        
         if(didAction):
-            print "waiting 30"
-            time.sleep(30)
+            print "waiting..."
+            time.sleep(randint(minTimeBetween, minTimeBetween+20))
         # print "add to vote, follow user and comment"
         # print "need to check if not follow + criteria"
         # print "need to check likes and follow tags + users"
 
-    #doComment("81367687")
-    # print getLikesOfPhoto("81367687")
-    #vote("81367687")
-    # print doLogout()
+    # we need to logout the user
+    doLogout()

@@ -11,7 +11,7 @@
 		"type": "top_trend|categories|tags|fresh|popoular|upcoming|following",
 		"pageLimit": 5,
 		"categories": ["abstract", "nature"],
-		"tags": ["panorama", "landscapes", "..."],
+		"tags": ["panorama", "landscapes", "..."]
 	},
 	"paramsLike": {
 		"type": "top_trend|categories|tags|fresh|popoular|upcoming|not_following|following|random",
@@ -19,7 +19,7 @@
 		"categories": ["nature", "landscapes"],
 		"maxHour": 30,
 		"maxDay": 100,
-		"timeBetween": "300sec"
+		"timeBetween": 30
 	},
 	"paramsFollow": {
 		"type": "top_trend|categories|tags|fresh|popoular|upcoming|not_following|following|random",
@@ -27,7 +27,7 @@
 		"categories": ["nature", "landscapes"],
 		"maxHour": 30,
 		"maxDay": 100,
-		"timeBetween": "300sec",
+		"timeBetween": 500,
 		"unFollowAfter": "3days"
 	},
 	"paramsComment": {
@@ -36,7 +36,7 @@
 		"categories": ["nature", "landscapes"],
 		"maxHour": 30,
 		"maxDay": 100,
-		"timeBetween": "300sec",
+		"timeBetween": 300,
 		"lookup": ["frasi per commentare", "Great job!", "Wow! That's really nice!", "Nice shot!"]
 	},
 	"botConfig": {
@@ -53,17 +53,11 @@
 		"min_following_to_follow" : 5,
 		"max_followers_to_following_ratio" : 3,
 		"max_following_to_followers_ratio" : 3,
+		"min_likes_to_like" : 30,
 		"follow_users_from_like": false,
-		"tag_search" : true,
-		"max_likes_to_like" : 30,
-		"like_delay" : 20,
-		"unlike_delay" : 3600,
-		"follow_delay" : 600,
 		"unfollow_delay" : 1800,
 		"unlike_delay" : 3600,
-		"comment_delay" : 300,
 		"whitelist" : null,
-		"blacklist" : null,
-		"comments_file" : null
+		"blacklist" : null
 	}
 }
