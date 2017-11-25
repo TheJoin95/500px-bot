@@ -38,6 +38,7 @@ BASE_CONFIG = {
 STATS = {
     "commentCounter": {},
     "voteCounter": {},
+    "unvoteCounter": {},
     "followingCounter": {},
     "unfollowingCounter": {}
 }
@@ -83,6 +84,16 @@ def checkCriteria(key="", content={}):
         "paramsComment": ["max_comments_per_day"]
     }
 
+    # mapping key of stats for criteriaKey
+    statsKey = {
+        "paramsLike" : "voteCounter",
+        "paramsUnLike" : "unvoteCounter",
+        "paramsFollow" : "followingCounter",
+        "paramsUnFollow" : "unfollowingCounter",
+        "paramsComment" : "commentCounter"
+    }
+
+    # maybe i need to use jsonLogin here for return a boolean
     if key in criteriaKey:
         for value in criteriaKey[key]:
             # need to check the values by condition
@@ -567,6 +578,10 @@ if __name__ == '__main__':
     print "We got " + str(len(searchArray)) + " photos to check and comment/vote/follow"
 
     # too many time, need to make a queue or some workers to process the whole list by part
+    # queueEngine => rabbit
+    # list queue => ["search", "comment", "vote","unvote", "following", "unfollow"]
+    # workers: ["search", "comment", "voting", "following"]
+    
     for el in searchArray:
         # need to add to db or in a queue
         #print "need to check criteria"
@@ -577,8 +592,8 @@ if __name__ == '__main__':
         if("paramsLike" in configValues and configValues["paramsLike"] == True):
             print "voted: " + str(vote(el))
             didAction = True
-            if "timeBetween" in configFileValues["paramsLike"]:
-                minTimeBetween = configFileValues["paramsLike"]["timeBetween"]
+            if "timeBetween" in configValues["paramsLike"]:
+                minTimeBetween = configValues["paramsLike"]["timeBetween"]
 
         # print "need to check if not commented + criteria"
         if("paramsComment" in configValues and configValues["paramsComment"] == True):
@@ -587,8 +602,8 @@ if __name__ == '__main__':
                 bodyComment = configValues["paramsComment"]["lookup"][randint(0, (len(configValues["paramsComment"]["lookup"])-1))]
             
             print "comment: " + str(doComment(idphoto=el["id"], body=bodyComment, auto=True))
-            if "timeBetween" in configFileValues["paramsComment"]:
-                minTimeBetween = configFileValues["paramsComment"]["timeBetween"]
+            if "timeBetween" in configValues["paramsComment"]:
+                minTimeBetween = configValues["paramsComment"]["timeBetween"]
             
             didAction = True
         
