@@ -1,7 +1,8 @@
 {
 	"paramsLogin": {
-		"email": "blabla@mail.it",
-		"password": "secretpswd"
+		"authenticity_token": "",
+		"session[email]": "blabla@mail.it",
+		"session[password]": "secretpswd"
 	},
 	"csrfHeaders": {
         "X-CSRF-Token": "",
@@ -39,25 +40,23 @@
 		"timeBetween": 300,
 		"lookup": ["frasi per commentare", "Great job!", "Wow! That's really nice!", "Nice shot!"]
 	},
-	"botConfig": {
-		"proxy" : null,
-		"max_likes_per_day" : 100,
-		"max_unlikes_per_day" : 100,
-		"max_follows_per_day" : 100,
-		"max_unfollows_per_day" : 10,
-		"max_comments_per_day" : 50,
-		"max_likes_to_like" : 250,
-		"max_followers_to_follow" : 500,
-		"min_followers_to_follow" : 0,
-		"max_following_to_follow" : 500,
-		"min_following_to_follow" : 5,
-		"max_followers_to_following_ratio" : 3,
-		"max_following_to_followers_ratio" : 3,
-		"min_likes_to_like" : 30,
-		"follow_users_from_like": false,
-		"unfollow_delay" : 1800,
-		"unlike_delay" : 3600,
-		"whitelist" : null,
-		"blacklist" : null
-	}
+	"proxy" : null,
+	"max_likes_per_day" : 100,
+	"max_unlikes_per_day" : 100,
+	"max_follows_per_day" : 100,
+	"max_unfollows_per_day" : 10,
+	"max_comments_per_day" : 50,
+	"max_likes_to_like" : 250,
+	"max_followers_to_follow" : 500,
+	"min_followers_to_follow" : 0,
+	"max_following_to_follow" : 500,
+	"min_following_to_follow" : 5,
+	"max_followers_to_following_ratio" : 3,
+	"max_following_to_followers_ratio" : 3,
+	"min_likes_to_like" : 30,
+	"follow_users_from_like": false,
+	"unfollow_delay" : 1800,
+	"unlike_delay" : 3600,
+	"whitelist" : null,
+	"blacklist" : null
 }
