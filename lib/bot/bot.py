@@ -142,6 +142,7 @@ class Bot(API):
         
         if len(searchParams) > 0:
             self.initVote()
+            self.initComment()
             for searchParam in searchParams:
                 result = super(Bot, self).search(searchParam)
                 print "Found " + str(len(result)) + " photos"
@@ -149,6 +150,14 @@ class Bot(API):
             print "No search params defined"
 
         return True
+
+    def initComment(self):
+        for i in range(self.constants["WORKER_THREADS"]):
+            worker = Thread(target=super(Bot, self).initCommentThreads, args=())
+            worker.setDaemon(True)
+            worker.start()
+        
+        print "init comment threads"
 
     def initVote(self):
         for i in range(self.constants["WORKER_THREADS"]):

@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from search import search
 from vote import *
+from comment import *
 
 class API(object):
     def __init__(self):
@@ -36,18 +37,23 @@ class API(object):
         try:
             response = self.enviroment_variables["userSession"].request(method, url, data = data, headers = headers, proxies = None, timeout = 5)
         except requests.exceptions.RequestException:
-            print "timeout"
+            self.logger.info("request timeout")
             time.sleep(5)
             pass
         if checkStatusCode and response.status_code != 200:
-            print "error page"
+            self.logger.info("error on request")
             time.sleep(5)
             pass
         return response
 
     def initVoteThreads(self):
         vote(self, self.constants["QUEUE_VOTE"])
-        print "Initialized Vote Thread"
+        self.logger.info("Initialized Vote Thread")
+        return True
+
+    def initCommentThreads(self):
+        doComment(self, self.constants["QUEUE_COMMENT"])
+        self.logger.info("Initialized Comment Thread")
         return True
     
     # not in use right now, but maybe here i need to add in queue the photo to like
@@ -71,7 +77,7 @@ class API(object):
 
         # put the request in a queue, so we can have multithread searching for multiaccount
         for page in xrange(1, pageLimit+1):
-            print "Request for " + searchParam["term"] + " type: " + searchParam["typeSearch"] + " sort: " + searchParam["sort"] + " page: " + str(page)
+            self.logger.info("Request for " + searchParam["term"] + " type: " + searchParam["typeSearch"] + " sort: " + searchParam["sort"] + " page: " + str(page))
             tmpSearchArray = search(self, term=searchParam["term"], typeSearch=searchParam["typeSearch"], sort=searchParam["sort"], categories=searchParam["categories"], page=page)
             if len(tmpSearchArray) > 0 and searchParam["typeSearch"] in tmpSearchArray and len(tmpSearchArray[searchParam["typeSearch"]]) > 0:
                 for item in tmpSearchArray[searchParam["typeSearch"]]:
@@ -79,7 +85,7 @@ class API(object):
                     # need to check in config
                     # put it in a function...
                     self.constants["QUEUE_VOTE"].put(item)
-                    # self.constants["QUEUE_COMMENT"].put(self.comment(item))
+                    self.constants["QUEUE_COMMENT"].put(item)
                     # self.constants["QUEUE_FOLLOW"].put(self.follow(item))
                 
                 searchResult = searchResult + tmpSearchArray[searchParam["typeSearch"]]

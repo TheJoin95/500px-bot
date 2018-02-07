@@ -91,7 +91,7 @@ def unVote(self, q):
             continue
             pass
 
-        if can_i_unvote == False and ("ttl" not in el or el["ttl"] > time.time()):
+        if can_i_unvote == 0 and ("ttl" not in el or el["ttl"] > time.time()):
             if self.constants["BASE_CONFIG"]["auto_unvote"] == True or self.enviroment_variables["configValues"]["auto_unvote"] == True:
                 self.constants["QUEUE_UNVOTE"].put(el)
             
