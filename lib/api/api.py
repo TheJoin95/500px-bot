@@ -55,6 +55,19 @@ class API(object):
         doComment(self, self.constants["QUEUE_COMMENT"])
         self.logger.info("Initialized Comment Thread")
         return True
+
+    def initFollowThreads(self):
+        doFollow(self, self.constants["QUEUE_FOLLOW"])
+        self.logger.info("Initialized Follow Thread")
+        return True
+
+    def initUnFollowThreads(self):
+        unFollow(self, self.constants["QUEUE_UNFOLLOW"])
+        self.logger.info("Initialized Unfollow Thread")
+        return True
+    
+    def doComment(self):
+        return False
     
     # not in use right now, but maybe here i need to add in queue the photo to like
     def vote(self, el):

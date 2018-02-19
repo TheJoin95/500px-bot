@@ -143,6 +143,8 @@ class Bot(API):
         if len(searchParams) > 0:
             self.initVote()
             self.initComment()
+            #self.initFollow()
+            #self.initUnfollow()
             for searchParam in searchParams:
                 result = super(Bot, self).search(searchParam)
                 print "Found " + str(len(result)) + " photos"
@@ -158,6 +160,22 @@ class Bot(API):
             worker.start()
         
         print "init comment threads"
+    
+    def initFollow(self):
+        for i in range(self.constants["WORKER_THREADS"]):
+            worker = Thread(target=super(Bot, self).initFollowThreads, args=())
+            worker.setDaemon(True)
+            worker.start()
+        
+        print "init follow threads"
+    
+    def initUnfollow(self):
+        for i in range(self.constants["WORKER_THREADS"]):
+            worker = Thread(target=super(Bot, self).initUnfollowThreads, args=())
+            worker.setDaemon(True)
+            worker.start()
+        
+        print "init unfollow threads"
 
     def initVote(self):
         for i in range(self.constants["WORKER_THREADS"]):
